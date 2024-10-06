@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <title>Student management system </title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <h1>Student management system</h1>
+    
+    <!-- Form to Save New Student -->
+    <h2>Add New Student</h2>
+    <form id="saveForm" onsubmit="return saveStudent();">
+        <label for="rollNo">Roll No:</label>
+        <input type="text" id="rollNo" required />
+        <br />
+        <label for="name">Name:</label>
+        <input type="text" id="name" required />
+        <br />
+        <label for="degree">Degree:</label>
+        <input type="text" id="degree" required />
+        <br />
+        <label for="city">City:</label>
+        <input type="text" id="city" required />
+        <br />
+        <button type="submit">Save Student</button>
+    </form>
+
+    <h2>Existing Students</h2>
+    <ul>
+        <% students.forEach(item => { %>
+            <li>
+                <%= item.name %> (Roll No: <%= item.rollNo %>, Degree: <%= item.degree %>, City: <%= item.city %>)
+                <button onclick="showUpdateForm('<%= item._id %>', '<%= item.rollNo %>', '<%= item.name %>', '<%= item.degree %>', '<%= item.city %>')">Update</button>
+                <button onclick="deleteData('<%= item._id %>')">Delete</button>
+            </li>
+        <% }) %>
+    </ul>
+
+    <!-- Update Form -->
+    <div id="updateForm" style="display:none;">
+        <h2>Update Student</h2>
+        <label for="updateRollNo">Roll No:</label>
+        <input type="text" id="updateRollNo" />
+        <br />
+        <label for="updateInput">Name:</label>
+        <input type="text" id="updateInput" />
+        <br />
+        <label for="updateDegree">Degree:</label>
+        <input type="text" id="updateDegree" />
+        <br />
+        <label for="updateCity">City:</label>
+        <input type="text" id="updateCity" />
+        <br />
+        <button onclick="submitUpdate()">Submit Update</button>
+        <button onclick="closeUpdateForm()">Cancel</button>
+    </div>
+
+    <script>
+        let currentId;
+
+        function saveStudent() {
+            const newStudent = {
+                rollNo: document.getElementById('rollNo').value,
+                name: document.getElementById('name').value,
+                degree: document.getElementById('degree').value,
+                city: document.getElementById('city').value,
+            };
+
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newStudent),
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload(); // Reload to see the new list
+                } else {
+                    alert('Error saving student data');
+                }
+            });
+
+            return false; // Prevent default form submission
+        }
+
+        function showUpdateForm(id, rollNo, name, degree, city) {
+            document.getElementById('updateRollNo').value = rollNo;
+            document.getElementById('updateInput').value = name;
+            document.getElementById('updateDegree').value = degree;
+            document.getElementById('updateCity').value = city;
+            currentId = id;
+            document.getElementById('updateForm').style.display = 'block';
+        }
+
+        function closeUpdateForm() {
+            document.getElementById('updateForm').style.display = 'none';
+        }
+
+        function submitUpdate() {
+            const updatedData = {
+                rollNo: document.getElementById('updateRollNo').value,
+                name: document.getElementById('updateInput').value,
+                degree: document.getElementById('updateDegree').value,
+                city: document.getElementById('updateCity').value,
+            };
+
+            fetch(`/update/${currentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedData),
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload(); // Reload to see the updated list
+                } else {
+                    alert('Error updating student data');
+                }
+            });
+        }
+
+        function deleteData(id) {
+            fetch(`/delete/${id}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload(); // Reload to see the updated list
+                }
+            });
+        }
+    </script>
+</body>
+</html>
